@@ -27,13 +27,17 @@ def create_user(user: User):
         if user_exists(value=user_email):
             return {"message": "User already exists"}
 
-        # Add user to users table
-        user = supabase.from_("users")\
-            .insert({"name": user.name, "email": user_email, "password": hased_password})\
+        if (
+            user := supabase.from_("users")
+            .insert(
+                {
+                    "name": user.name,
+                    "email": user_email,
+                    "password": hased_password,
+                }
+            )
             .execute()
-        
-        # Check if user was added
-        if user:
+        ):
             return {"message": "User created successfully"}
         else:
             return {"message": "User creation failed"}
@@ -47,19 +51,19 @@ def create_user(user: User):
 def get_user(user_id: Union[str, None] = None):
     try:
         if user_id:
-            user = supabase.from_("users")\
-                .select("id", "name", "email")\
-                .eq("id", user_id)\
+            if (
+                user := supabase.from_("users")
+                .select("id", "name", "email")
+                .eq("id", user_id)
                 .execute()
-            
-            if user:
+            ):
                 return user
-        else:
-            users = supabase.from_("users")\
-                .select("id", "email", "name")\
-                .execute()
-            if users:
-                return users
+        elif (
+            users := supabase.from_("users")
+            .select("id", "email", "name")
+            .execute()
+        ):
+            return users
     except Exception as e:
         print(f"Error: {e}")
         return {"message": "User not found"}
@@ -80,11 +84,12 @@ def update_user(user_id: str, email: str, name: str):
             if len(email_exists.data) > 0:
                 return {"message": "Email already exists"}
 
-            # Update user
-            user = supabase.from_("users")\
-                .update({"name": name, "email": user_email})\
-                .eq("id", user_id).execute()
-            if user:
+            if (
+                user := supabase.from_("users")
+                .update({"name": name, "email": user_email})
+                .eq("id", user_id)
+                .execute()
+            ):
                 return {"message": "User updated successfully"}
         else:
             return {"message": "User update failed"}
